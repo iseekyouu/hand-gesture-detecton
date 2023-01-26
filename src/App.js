@@ -131,6 +131,8 @@ function App() {
             Math.max.apply(null, confidence)
           );
 
+          console.log({ 1: gesture.gestures[maxConfidence].score });
+
           if (gesture.gestures[maxConfidence] && gesture.gestures[maxConfidence].score > 9) {
             onGestureDetectEvent(gesture.gestures[maxConfidence].name);
           }
