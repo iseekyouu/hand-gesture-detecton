@@ -25,6 +25,7 @@ import raised_hand from "./raised_hand.png";
 ///////// NEW STUFF IMPORTS
 
 import { Gestures } from 'fingerpose-gestures';
+import Countdown from './Countdown';
 
 let stack = {};
 
@@ -35,7 +36,7 @@ function App() {
   ///////// NEW STUFF ADDED STATE HOOK
   const [emoji, setEmoji] = useState(null);
   const [net, setNet] = useState(null);
-  const [intervalNumber, setIntervalNumber] = useState(null);
+  const [detectInterval, setDetectInterval] = useState(null);
 
 
   const images = { thumbs_up: thumbs_up, victory: victory, thumbs_down, raised_hand };
@@ -49,18 +50,15 @@ function App() {
 
   const runHandpose = async () => {
     //  Loop and detect hands
-    const intervalNumber = setInterval(() => {
+    const detectInterval = setInterval(() => {
       detect(net);
     }, 10);
 
-    setIntervalNumber(intervalNumber);
-    setInterval(() => {
-      determineGestureFromStack();
-    }, 3000)
+    setDetectInterval(detectInterval);
   };
 
   function stopAndDelayDetect() {
-    clearInterval(intervalNumber);
+    clearInterval(detectInterval);
 
     setTimeout(() => {
       setEmoji(null);
@@ -69,17 +67,21 @@ function App() {
   }
 
 
-  function stackIt(key) {
-    stack[key] = (stack[key] || 0) + 1;
+  function onGestureDetectEvent(gesture) {
+    stackIt(gesture);
+    setEmoji(gesture);
   }
 
-  function determineGestureFromStack() {
-    const gesture = Object.keys(stack).reduce((acc, key) => stack[acc] > stack[key] ? acc : key, Object.keys(stack)[0])
-    if (gesture) {
-      setEmoji(gesture);
-    }
+  function onApproveGesture() {
+    setEmoji(null);
+    stopAndDelayDetect();
 
-    stack = {};
+    // do stuff
+  }
+
+
+  function stackIt(key) {
+    stack[key] = (stack[key] || 0) + 1;
   }
 
   const detect = async (net) => {
@@ -130,10 +132,7 @@ function App() {
           );
 
           if (gesture.gestures[maxConfidence] && gesture.gestures[maxConfidence].score > 9) {
-            stackIt(gesture.gestures[maxConfidence].name);
-            // setEmoji(gesture.gestures[maxConfidence].name);
-            // console.log({ gestureStack });
-
+            onGestureDetectEvent(gesture.gestures[maxConfidence].name);
           }
           // console.log(emoji);
         }
@@ -147,19 +146,15 @@ function App() {
     }
   };
 
-  useEffect(() => loadNet(), []);
+  useEffect(() => { loadNet() }, []);
 
   useEffect(() => {
     if (net) {
       runHandpose();
     }
-}, [net]);
-
-  useEffect(() => {
-   if (emoji) {
-     stopAndDelayDetect();
-   }
-  }, [emoji]);
+  },
+    [net]
+  );
 
   return (
     <div className="App">
@@ -196,8 +191,10 @@ function App() {
           }}
         />
         {/* NEW STUFF */}
-        {emoji !== null ? (
+        {emoji && (
+          <>
           <img
+            alt='aa'
             src={images[emoji]}
             style={{
               position: "absolute",
@@ -210,10 +207,9 @@ function App() {
               height: 100,
             }}
           />
-        ) : (
-          ""
+            <Countdown onFinish={() => onApproveGesture()} />
+          </>
         )}
-
         {/* NEW STUFF */}
       </header>
     </div>
