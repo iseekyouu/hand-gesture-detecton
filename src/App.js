@@ -24,10 +24,9 @@ import thumbs_down from "./thumbs_down.jpg";
 import raised_hand from "./raised_hand.png";
 ///////// NEW STUFF IMPORTS
 
-import thumbsDownDescription from './ThumbsDownGesture';
-import thumbsUpDescription from './ThumbsUpGesture';
-
 import { Gestures } from 'fingerpose-gestures';
+
+let stack = {};
 
 function App() {
   const webcamRef = useRef(null);
@@ -35,31 +34,52 @@ function App() {
 
   ///////// NEW STUFF ADDED STATE HOOK
   const [emoji, setEmoji] = useState(null);
+  const [net, setNet] = useState(null);
   const [intervalNumber, setIntervalNumber] = useState(null);
 
 
   const images = { thumbs_up: thumbs_up, victory: victory, thumbs_down, raised_hand };
   ///////// NEW STUFF ADDED STATE HOOK
 
-  const runHandpose = async () => {
+  async function loadNet() {
     const net = await handpose.load();
+    setNet(net);
     console.log("Handpose model loaded.");
+  }
+
+  const runHandpose = async () => {
     //  Loop and detect hands
     const intervalNumber = setInterval(() => {
       detect(net);
     }, 10);
 
     setIntervalNumber(intervalNumber);
-    console.log({ interval: intervalNumber });
+    setInterval(() => {
+      determineGestureFromStack();
+    }, 3000)
   };
 
-  function reloadAi() {
+  function stopAndDelayDetect() {
     clearInterval(intervalNumber);
 
     setTimeout(() => {
       setEmoji(null);
       runHandpose();
-    }, 3000);
+    }, 2000);
+  }
+
+
+  function stackIt(key) {
+    stack[key] = (stack[key] || 0) + 1;
+  }
+
+  function determineGestureFromStack() {
+    const gesture = Object.keys(stack).reduce((acc, key) => stack[acc] > stack[key] ? acc : key, Object.keys(stack)[0])
+    if (gesture) {
+      setEmoji(gesture);
+    }
+
+    stack = {};
   }
 
   const detect = async (net) => {
@@ -95,25 +115,27 @@ function App() {
           Gestures.thumbsDownGesture,
           Gestures.raisedHandGesture,
         ]);
-        console.log({ thumbs_up: thumbsUpDescription, thumbs_down: thumbsDownDescription });
 
         const gesture = await GE.estimate(hand[0].landmarks, 4);
         if (gesture.gestures !== undefined && gesture.gestures.length > 0) {
-          console.log(gesture.gestures);
+          // console.dir(gesture.gestures);
 
           const confidence = gesture.gestures.map(
             (prediction) => prediction.score
           );
-          console.log({ confidence });
+          // console.log({ confidence });
 
           const maxConfidence = confidence.indexOf(
             Math.max.apply(null, confidence)
           );
 
           if (gesture.gestures[maxConfidence] && gesture.gestures[maxConfidence].score > 9) {
-            setEmoji(gesture.gestures[maxConfidence].name);
+            stackIt(gesture.gestures[maxConfidence].name);
+            // setEmoji(gesture.gestures[maxConfidence].name);
+            // console.log({ gestureStack });
+
           }
-          console.log(emoji);
+          // console.log(emoji);
         }
       }
 
@@ -125,11 +147,17 @@ function App() {
     }
   };
 
-  useEffect(()=>{runHandpose()},[]);
+  useEffect(() => loadNet(), []);
+
+  useEffect(() => {
+    if (net) {
+      runHandpose();
+    }
+}, [net]);
 
   useEffect(() => {
    if (emoji) {
-     reloadAi();
+     stopAndDelayDetect();
    }
   }, [emoji]);
 
