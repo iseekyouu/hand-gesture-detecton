@@ -139,7 +139,7 @@ function App() {
 
           // console.log({ 1: gesture.gestures[maxConfidence].score });
 
-          if (gesture.gestures[maxConfidence] && gesture.gestures[maxConfidence].score >= 8) {
+          if (gesture.gestures[maxConfidence] && gesture.gestures[maxConfidence].score >= 8.2) {
             onGestureDetectEvent(gesture.gestures[maxConfidence].name);
           } else {
             console.log({ score: gesture.gestures[maxConfidence] && gesture.gestures[maxConfidence].score });
