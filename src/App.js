@@ -79,7 +79,6 @@ function App() {
     console.log({ approve: 1 });
 
     setTimeRemain(0);
-    setEmoji(null);
     stopAndDelayDetect();
 
     // do stuff
