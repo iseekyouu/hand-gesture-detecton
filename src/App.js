@@ -141,7 +141,7 @@ function App() {
 
           if (gesture.gestures[maxConfidence] && gesture.gestures[maxConfidence].score >= 8.2) {
             onGestureDetectEvent(gesture.gestures[maxConfidence].name);
-          } else {
+          } else if (gesture.gestures[maxConfidence] && gesture.gestures[maxConfidence].score < 8) {
             console.log({ score: gesture.gestures[maxConfidence] && gesture.gestures[maxConfidence].score });
 
             setEmoji(null);
