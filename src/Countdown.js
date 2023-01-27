@@ -1,5 +1,6 @@
 import React from 'react';
 
+const colors = ['green', 'yellow', 'black', 'blue', 'red', 'brown', 'gray'];
 
 function Countdown({ timer, onFinish = () => {} }) {
   const [timeRemain, setTimeRemain] = React.useState(timer);
@@ -39,8 +40,14 @@ function Countdown({ timer, onFinish = () => {} }) {
     right: 0,
     textAlign: "center",
     height: 100,
+    fontSize: '70px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
   }}>
-    countdown {timeRemain}
+    <span style={{
+      color: colors[Math.floor(Math.random() *7)],
+      }}>{timeRemain}</span>
   </div>)
 }
 

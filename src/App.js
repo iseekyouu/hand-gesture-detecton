@@ -21,7 +21,7 @@ import  * as fp from "fingerpose";
 import victory from "./victory.png";
 import thumbs_up from "./thumbs_up.png";
 // import thumbs_down from "./thumbs_down.jpg";
-import raised_hand from "./raised_hand.png";
+import raised_hand from "./open-hand.svg";
 ///////// NEW STUFF IMPORTS
 
 import { Gestures } from 'fingerpose-gestures';
@@ -222,6 +222,7 @@ function App() {
             {timeRemain && <Countdown timer={timeRemain} onFinish={() => onApproveGesture()} />}
           </>
         )}
+        {/* <Countdown timer={timeRemain} onFinish={() => {}} /> */}
         {/* NEW STUFF */}
       </header>
     </div>
