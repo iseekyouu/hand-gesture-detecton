@@ -1,17 +1,16 @@
 import React from 'react';
 
 
-function Countdown({ onFinish = () => {} }) {
-  const [timeRemain, setTimeRemain] = React.useState(3);
+function Countdown({ timer, onFinish = () => {} }) {
+  const [timeRemain, setTimeRemain] = React.useState(timer);
   let countdownTimer;
 
   function startTimer() {
+    setTimeRemain(timer);
     let timeLeft = timeRemain;
-    console.log({ started: 1 });
+    console.log({ timeLeft });
 
     countdownTimer = setInterval(() => {
-      console.log({ int: 1 });
-
       --timeLeft; // eslint-disable-line
       setTimeRemain(timeLeft);
 
@@ -26,8 +25,6 @@ function Countdown({ onFinish = () => {} }) {
   }
 
   function resetTimer() {
-    console.log({ reset: 1 });
-
     clearInterval(countdownTimer);
   }
 

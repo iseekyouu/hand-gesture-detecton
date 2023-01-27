@@ -20,7 +20,7 @@ import { drawHand } from "./utilities";
 import  * as fp from "fingerpose";
 import victory from "./victory.png";
 import thumbs_up from "./thumbs_up.png";
-import thumbs_down from "./thumbs_down.jpg";
+// import thumbs_down from "./thumbs_down.jpg";
 import raised_hand from "./raised_hand.png";
 ///////// NEW STUFF IMPORTS
 
@@ -35,11 +35,13 @@ function App() {
 
   ///////// NEW STUFF ADDED STATE HOOK
   const [emoji, setEmoji] = useState(null);
+  const [timeRemain, setTimeRemain] = useState(null);
+
   const [net, setNet] = useState(null);
   const [detectInterval, setDetectInterval] = useState(null);
 
 
-  const images = { thumbs_up: thumbs_up, victory: victory, thumbs_down, raised_hand };
+  const images = { thumbs_up: thumbs_up, thumbs_down: thumbs_up, victory: victory, raised_hand };
   ///////// NEW STUFF ADDED STATE HOOK
 
   async function loadNet() {
@@ -70,9 +72,13 @@ function App() {
   function onGestureDetectEvent(gesture) {
     stackIt(gesture);
     setEmoji(gesture);
+    setTimeRemain(3);
   }
 
   function onApproveGesture() {
+    console.log({ approve: 1 });
+
+    setTimeRemain(0);
     setEmoji(null);
     stopAndDelayDetect();
 
@@ -114,7 +120,7 @@ function App() {
         const GE = new fp.GestureEstimator([
           fp.Gestures.VictoryGesture,
           Gestures.thumbsUpGesture,
-          Gestures.thumbsDownGesture,
+          Gestures.thumbsUpGesture,
           Gestures.raisedHandGesture,
         ]);
 
@@ -131,10 +137,14 @@ function App() {
             Math.max.apply(null, confidence)
           );
 
-          console.log({ 1: gesture.gestures[maxConfidence].score });
+          // console.log({ 1: gesture.gestures[maxConfidence].score });
 
-          if (gesture.gestures[maxConfidence] && gesture.gestures[maxConfidence].score > 9) {
+          if (gesture.gestures[maxConfidence] && gesture.gestures[maxConfidence].score >= 8) {
             onGestureDetectEvent(gesture.gestures[maxConfidence].name);
+          } else {
+            console.log({ score: gesture.gestures[maxConfidence] && gesture.gestures[maxConfidence].score });
+
+            setEmoji(null);
           }
           // console.log(emoji);
         }
@@ -209,7 +219,7 @@ function App() {
               height: 100,
             }}
           />
-            <Countdown onFinish={() => onApproveGesture()} />
+            {timeRemain && <Countdown timer={timeRemain} onFinish={() => onApproveGesture()} />}
           </>
         )}
         {/* NEW STUFF */}
