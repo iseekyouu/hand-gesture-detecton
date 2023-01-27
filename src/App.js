@@ -22,12 +22,15 @@ import victory from "./victory.png";
 import thumbs_up from "./thumbs_up.png";
 // import thumbs_down from "./thumbs_down.jpg";
 import raised_hand from "./open-hand.svg";
+import raised_fist from "./Raised-fist.png";
 ///////// NEW STUFF IMPORTS
 
 import { Gestures } from 'fingerpose-gestures';
 import Countdown from './Countdown';
+import thumbsUpDescription from './thumbsUpGesture';
 
 let stack = {};
+let currentEmoji = {};
 
 function App() {
   const webcamRef = useRef(null);
@@ -41,7 +44,13 @@ function App() {
   const [detectInterval, setDetectInterval] = useState(null);
 
 
-  const images = { thumbs_up: thumbs_up, thumbs_down: thumbs_up, victory: victory, raised_hand };
+  const images = {
+    thumbs_up: thumbs_up,
+    // thumbs_down: thumbs_up,
+    // victory: victory,
+    raised_hand,
+    fist: raised_fist,
+   };
   ///////// NEW STUFF ADDED STATE HOOK
 
   async function loadNet() {
@@ -63,6 +72,7 @@ function App() {
     clearInterval(detectInterval);
 
     setTimeout(() => {
+      currentEmoji = null;
       setEmoji(null);
       runHandpose();
     }, 2000);
@@ -71,12 +81,17 @@ function App() {
 
   function onGestureDetectEvent(gesture) {
     stackIt(gesture);
+    if (currentEmoji !== gesture) {
+      setEmoji(null);
+    }
+
+    currentEmoji = gesture;
     setEmoji(gesture);
     setTimeRemain(3);
   }
 
   function onApproveGesture() {
-    console.log({ approve: 1 });
+    console.log({ approve: 1, emoji });
 
     setTimeRemain(0);
     stopAndDelayDetect();
@@ -117,15 +132,16 @@ function App() {
 
       if (hand.length > 0) {
         const GE = new fp.GestureEstimator([
-          fp.Gestures.VictoryGesture,
-          Gestures.thumbsUpGesture,
-          Gestures.thumbsUpGesture,
+          // fp.Gestures.VictoryGesture,
+          thumbsUpDescription,
+          // Gestures.thumbsUpGesture,
           Gestures.raisedHandGesture,
+          Gestures.fistGesture,
         ]);
 
         const gesture = await GE.estimate(hand[0].landmarks, 4);
         if (gesture.gestures !== undefined && gesture.gestures.length > 0) {
-          // console.dir(gesture.gestures);
+          // console.log({ ...gesture.gestures });
 
           const confidence = gesture.gestures.map(
             (prediction) => prediction.score
@@ -138,12 +154,14 @@ function App() {
 
           // console.log({ 1: gesture.gestures[maxConfidence].score });
 
-          if (gesture.gestures[maxConfidence] && gesture.gestures[maxConfidence].score >= 8.2) {
+          if (gesture.gestures[maxConfidence] && gesture.gestures[maxConfidence].score >= 8.6) {
             onGestureDetectEvent(gesture.gestures[maxConfidence].name);
-          } else if (gesture.gestures[maxConfidence] && gesture.gestures[maxConfidence].score < 8) {
+          } else {
+            if (currentEmoji !== gesture.gestures[maxConfidence].name) {
+              currentEmoji = null;
+              setEmoji(null);
+            }
             console.log({ score: gesture.gestures[maxConfidence] && gesture.gestures[maxConfidence].score });
-
-            setEmoji(null);
           }
           // console.log(emoji);
         }
